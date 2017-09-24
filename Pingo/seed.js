@@ -2028,5 +2028,25 @@ export const Places = {
             "Updated": "2013-12-29T04:03:43Z"
         },
         "type": "Feature"
+    }, {
+        "geometry": {
+            "coordinates": [-74.1266996, 40.8887259],
+            "type": "Point"
+        },
+        "properties": {
+            "Google Maps URL": "http://maps.google.com/?cid=15108758666111037743",
+            "Location": {
+                "Address": "61 Kipp Ave, Elmwood Park, NJ 07407, United States",
+                "Country Code": "US",
+                "Geo Coordinates": {
+                    "Latitude": "40.8887259",
+                    "Longitude": "-74.1266996"
+                }
+            },
+            "Published": "2013-12-29T04:03:43Z",
+            "Title": "TEST PLACE NEAR APT",
+            "Updated": "2013-12-29T04:03:43Z"
+        },
+        "type": "Feature"
     }]
 }

@@ -170,29 +170,25 @@ export default class App extends Component {
     // map over markers
     markers.map(elem => {
       // takes arguments and a callback
+      console.log("in makers.map 173", elem.title)
       distance.get(
-        // args
         {
-          origin: "'"+usersLoc.latitude+", "+usersLoc.longitude+"'",
-          destination: "'"+elem.latlng.latitude+", "+elem.latlng.longitude+"'"
+          origin: usersLoc.latitude+","+usersLoc.longitude,
+          destination: elem.latlng.latitude+","+elem.latlng.longitude
         },
-        // callback
         function(err, data) {
           if (err) return console.log("hitting error 181", err);
-          console.log("GOOGLEMATRIX***", data, "***", elem);
-          // if (data.distanceValue < 600) {
-          //   console.log("~~~10 MIN WALK AWAY~~~", elem)
-            // closeBy.push(markers[elem])
-          // }
+          // console.log("GOOGLEMATRIX***", data, "***", elem);
+          if (data.distanceValue < 600) {
+            console.log("~~~10 MIN WALK AWAY~~~", elem)
+            closeBy.push(elem);
+          }
+        })
       })
-    })
-    // this.setState({ closeBy })
+      this.setState({ closeBy })
+      console.log("closeBy state", this.state.closeBy, "closeBy", closeBy)
   }
   
-
-  // getDistanceMatrix= () => {
-      
-  // }
 
   // iterate through markers and return array of markers that are within 10 min walking distance
   // push all markers to alert / push msg
@@ -285,7 +281,7 @@ const styles = StyleSheet.create({
 });
 
 // region={this.state.mapRegion}
-// Google Maps Distance Matrix API Key: AIzaSyBr8DqWonuHgVOgQBwr2JCnfP3fWW4aVeo AIzaSyBkjfNu49UsrXqZp46RHTWA34N3En5J3t0
+// Google Maps Distance Matrix API Key: AIzaSyBr8DqWonuHgVOgQBwr2JCnfP3fWW4aVeo AIzaSyBkjfNu49UsrXqZp46RHTWA34N3En5J3t0 AIzaSyAezJ42YR77rQoyJUnGnf4kLmct3n1w-Sk
 
 // Google Maps Geocoding API Key: AIzaSyBPQZxYVs18P_5NeAHLXvVfQQ1D1LCB0gM
 
