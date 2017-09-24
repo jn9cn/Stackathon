@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import { StyleSheet, Text, View, Button, Alert } from 'react-native';
 import { Location, Permissions, Notifications } from 'expo';
 import MapView from 'react-native-maps';
-import BgGeo from './BkgndGeolocation';
+// import BgGeo from './BkgndGeolocation';
 // import { mapStyle } from './MapStyle';
 import { Places } from './seed';
+import { localNotification, schedulingOptions } from './LocalNotification';
 
 export default class App extends Component {
   constructor(props) {
@@ -31,6 +32,7 @@ export default class App extends Component {
 
     this.watchId = null;
     this.getDistanceMatrix = this.getDistanceMatrix.bind(this);
+    this.firePushNotification = this.firePushNotification.bind(this);
 
   };
 
@@ -85,8 +87,10 @@ export default class App extends Component {
       }})
       // console.log("LOAD MARKERS")
       // this._loadMarkers();
-      console.log("GET DISTANCE MATRIX called 88")
-      this.getDistanceMatrix();
+
+// NOTE: UMCOMMENT THIS BACK AFTER TESTING
+      // console.log("GET DISTANCE MATRIX called 88")
+      // this.getDistanceMatrix();
   })}
 
   componentWillUnmount() {
@@ -159,6 +163,9 @@ export default class App extends Component {
         longitude: this.state.location.coords.longitude
       }
     })
+    console.log("GET DISTANCE MATRIX called 168")
+    this.getDistanceMatrix();
+    this.firePushNotification();
   }
 
   getDistanceMatrix = () => {
@@ -189,6 +196,9 @@ export default class App extends Component {
       console.log("closeBy state", this.state.closeBy, "closeBy", closeBy)
   }
   
+  firePushNotification = () => {
+    Notifications.scheduleLocalNotificationAsync(localNotification, schedulingOptions);
+  }
 
   // iterate through markers and return array of markers that are within 10 min walking distance
   // push all markers to alert / push msg
@@ -281,7 +291,7 @@ const styles = StyleSheet.create({
 });
 
 // region={this.state.mapRegion}
-// Google Maps Distance Matrix API Key: AIzaSyBr8DqWonuHgVOgQBwr2JCnfP3fWW4aVeo AIzaSyBkjfNu49UsrXqZp46RHTWA34N3En5J3t0 AIzaSyAezJ42YR77rQoyJUnGnf4kLmct3n1w-Sk
+// Google Maps Distance Matrix API Key: AIzaSyC4Qtz8UJspogS9ccNm4xvi3HOQOmgPgYs
 
 // Google Maps Geocoding API Key: AIzaSyBPQZxYVs18P_5NeAHLXvVfQQ1D1LCB0gM
 
