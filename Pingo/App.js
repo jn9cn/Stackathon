@@ -18,7 +18,8 @@ export default class App extends Component {
       markers: [
         { latlng: {latitude: 0, longitude: 0},
           title: "You are here"}
-      ]
+      ],
+      closeBy: []
     }
 
     this._getNotificationAsync = this._getNotificationAsync.bind(this);
@@ -29,11 +30,12 @@ export default class App extends Component {
     this.moveMapToLocation = this.moveMapToLocation.bind(this);
 
     this.watchId = null;
+    this.getDistanceMatrix = this.getDistanceMatrix.bind(this);
 
   };
 
   // extras: push notification, google oauth sign-in, stacks from onboard to use / text disappears
-  // background geolocation
+  // background geolocation, animated zooms
   // list of vistied / to visit in a tab
 
   // 1. get user's current location
@@ -47,6 +49,8 @@ export default class App extends Component {
 
   // if location changes, build geofence around user marker; after 3 min clear geofence and build another one around user
 
+  // explore push notification and geofencing vs distance matrix
+
   // 3. evaluate if user is within 10 min walking distance from places of interest
   // 3a. using Google Maps Distance Matrix API, if no places are within a 10 min walk, end
   // 3b. else, if more than one place is within a 10 min walk, batch list them in a push notifcation
@@ -57,39 +61,41 @@ export default class App extends Component {
   // get user's location
 
   componentWillMount() {
+    console.log("component WILL mount 64")
     this._getNotificationAsync();
     this._getLocationAsync();
   }
 
   async componentDidMount() {
+    console.log("component DID mount 70")
     this.watchId = await Location.watchPositionAsync({enableHighAccuracy: true, timeInterval: 1000}, (position) => {
+      console.log("REGION SET 72")
       this.setState({region: {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           latitudeDelta: 0.00922*1.5,
           longitudeDelta: 0.00421*1.5
       }})
-
+      console.log("LOCATION SET 79")
       this.setState({ location: {
         coords: {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         }
       }})
-
-      this.setState({
-        markers: [
-          { latlng: {latitude: position.coords.latitude, longitude: position.coords.longitude},
-          title: "You are here"}
-        ]
-      })
+      // console.log("LOAD MARKERS")
+      // this._loadMarkers();
+      console.log("GET DISTANCE MATRIX called 88")
+      this.getDistanceMatrix();
   })}
 
   componentWillUnmount() {
+    console.log("component WILL UNmount 93")
     Location.clearWatch(this.watchId);
   }
 
   onRegionChange(region) {
+    console.log("ON REGION CHANGE 98")    
     this.setState({ region })
   }
 
@@ -119,6 +125,7 @@ export default class App extends Component {
   // get user's places of interest
 
   _loadMarkers = () => {
+    console.log("LOAD MARKERS 128")    
     let latitude, longitude, title;
     let markers = [];
     Places.features.map(
@@ -132,6 +139,7 @@ export default class App extends Component {
   }
 
   _handleButtonPress = () => {
+    console.log("BUTTON PRESS 142")    
     // update to only load markers within region
       this._loadMarkers();
       Alert.alert(
@@ -141,7 +149,7 @@ export default class App extends Component {
   };
 
   moveMapToLocation = () => {
-    console.log("moving map to location &&&138")
+    console.log("move map to loc 152")
     // this._map.fitToElements(true);
     this.setState({
       region: {
@@ -153,13 +161,54 @@ export default class App extends Component {
     })
   }
 
+  getDistanceMatrix = () => {
+    console.log("GET DISTANCE MATRIX 165")    
+    let distance = require('react-native-google-matrix');
+    let usersLoc = this.state.location.coords;
+    let markers = this.state.markers;
+    let closeBy = [];
+    // map over markers
+    markers.map(elem => {
+      // takes arguments and a callback
+      distance.get(
+        // args
+        {
+          origin: "'"+usersLoc.latitude+", "+usersLoc.longitude+"'",
+          destination: "'"+elem.latlng.latitude+", "+elem.latlng.longitude+"'"
+        },
+        // callback
+        function(err, data) {
+          if (err) return console.log("hitting error 181", err);
+          console.log("GOOGLEMATRIX***", data, "***", elem);
+          // if (data.distanceValue < 600) {
+          //   console.log("~~~10 MIN WALK AWAY~~~", elem)
+            // closeBy.push(markers[elem])
+          // }
+      })
+    })
+    // this.setState({ closeBy })
+  }
+  
+
+  // getDistanceMatrix= () => {
+      
+  // }
+
+  // iterate through markers and return array of markers that are within 10 min walking distance
+  // push all markers to alert / push msg
+  // run every change in location (later on by movement / time interval)
+
+  // geofence: for all locations with 1 mi, put circular geofences around user and markers, radii = 0.3 m
+  // if user circle collides with marker circle (distance between centers < 0.6 m), 
+  // push all markers with collisions to alert / push notifcation message and send the message
+
   // when user location is 10 min walk away from a Google Place (geofence), ping user
   // note: if more than one Google Place is a 10 min walk away, push them into same notifcation and order them closest to farthest
 
   render() {
-    console.log("MARKER*****154", this.state.markers[0])
-    console.log("REGION^*^*^155", this.state.region)
-    console.log("LOCATION^^^^156", this.state.location)
+    // console.log("MARKER*****154", this.state.markers[0])
+    // console.log("REGION^*^*^155", this.state.region)
+    // console.log("LOCATION^^^^156", this.state.location)
     
     let text = 'Waiting...';
     if (this.state.errorMessage) {
@@ -182,8 +231,8 @@ export default class App extends Component {
           <MapView.Marker
             coordinate={{latitude: this.state.location.coords.latitude, longitude: this.state.location.coords.longitude}}
             title="Your location"
-          >
-          </MapView.Marker>
+            pinColor="blue"
+          />
             {this.state.markers.map((marker,i) => {
               return (
               <MapView.Marker
@@ -195,7 +244,7 @@ export default class App extends Component {
         </MapView>
         {this.state.markers.length<2
           ?
-          <Button title="Load My Places via Google" onPress={() => this._handleButtonPress()} />
+          <Button title="Load My Google Places" onPress={() => this._handleButtonPress()} />
           : 
           <Button color="#841584" title="My Location" onPress={() => this.moveMapToLocation()} />
         }
@@ -227,8 +276,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
   },
   map: {
     ...StyleSheet.absoluteFillObject,
@@ -236,7 +285,7 @@ const styles = StyleSheet.create({
 });
 
 // region={this.state.mapRegion}
-// Google Maps Distance Matrix API Key: AIzaSyBr8DqWonuHgVOgQBwr2JCnfP3fWW4aVeo
+// Google Maps Distance Matrix API Key: AIzaSyBr8DqWonuHgVOgQBwr2JCnfP3fWW4aVeo AIzaSyBkjfNu49UsrXqZp46RHTWA34N3En5J3t0
 
 // Google Maps Geocoding API Key: AIzaSyBPQZxYVs18P_5NeAHLXvVfQQ1D1LCB0gM
 

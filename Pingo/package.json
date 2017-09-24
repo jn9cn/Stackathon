@@ -24,6 +24,7 @@
     "react-native": "^0.47.0",
     "react-native-background-geolocation": "^2.9.3",
     "react-native-elements": "^0.17.0",
+    "react-native-google-matrix": "0.0.3",
     "react-native-linear-gradient": "^2.3.0",
     "react-native-maps": "^0.16.4",
     "react-native-push-notification": "^3.0.1",
