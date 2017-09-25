@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Button, Alert } from 'react-native';
 import { Location, Permissions, Notifications } from 'expo';
 import MapView from 'react-native-maps';
 // import BgGeo from './BkgndGeolocation';
+import BackgroundGeolocation from "react-native-background-geolocation";
 // import { mapStyle } from './MapStyle';
 import { Places } from './seed';
 import { localNotification, schedulingOptions } from './LocalNotification';
@@ -68,9 +69,9 @@ export default class App extends Component {
     this._getLocationAsync();
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     console.log("component DID mount 70")
-    this.watchId = await Location.watchPositionAsync({enableHighAccuracy: true, timeInterval: 1000}, (position) => {
+    this.watchId = Location.watchPositionAsync({enableHighAccuracy: true, timeInterval: 1000}, (position) => {
       console.log("REGION SET 72")
       this.setState({region: {
           latitude: position.coords.latitude,
@@ -87,10 +88,10 @@ export default class App extends Component {
       }})
       // console.log("LOAD MARKERS")
       // this._loadMarkers();
-
+      
 // NOTE: UMCOMMENT THIS BACK AFTER TESTING
-      // console.log("GET DISTANCE MATRIX called 88")
-      // this.getDistanceMatrix();
+      console.log("GET DISTANCE MATRIX called 88")
+      this.getDistanceMatrix();
   })}
 
   componentWillUnmount() {
@@ -150,6 +151,7 @@ export default class App extends Component {
         'You did it!',
         'Your places are ready to be discovered',
       );
+
   };
 
   moveMapToLocation = () => {
@@ -163,17 +165,21 @@ export default class App extends Component {
         longitude: this.state.location.coords.longitude
       }
     })
-    console.log("GET DISTANCE MATRIX called 168")
+    // console.log("GET DISTANCE MATRIX called 168")
+    // this.getDistanceMatrix();
+    console.log("GET DISTANCE MATRIX called 88")
     this.getDistanceMatrix();
     this.firePushNotification();
   }
 
   getDistanceMatrix = () => {
+    // fire every 30 seconds, 30000ms
     console.log("GET DISTANCE MATRIX 165")    
     let distance = require('react-native-google-matrix');
     let usersLoc = this.state.location.coords;
     let markers = this.state.markers;
     let closeBy = [];
+
     // map over markers
     markers.map(elem => {
       // takes arguments and a callback
@@ -188,16 +194,34 @@ export default class App extends Component {
           // console.log("GOOGLEMATRIX***", data, "***", elem);
           if (data.distanceValue < 600) {
             console.log("~~~10 MIN WALK AWAY~~~", elem)
-            closeBy.push(elem);
-          }
-        })
+            return closeBy.push(elem);
+        }
       })
+    })
+    console.log("closeBy state", this.state.closeBy, "closeBy", closeBy)
       this.setState({ closeBy })
-      console.log("closeBy state", this.state.closeBy, "closeBy", closeBy)
+      if (this.state.closeBy.length) {
+        this.firePushNotification();
+      }
   }
   
   firePushNotification = () => {
-    Notifications.scheduleLocalNotificationAsync(localNotification, schedulingOptions);
+    const localNotification = {
+      title: 'Pingo!',
+      body: 'You are near '+this.state.closeBy.map(elem=>elem.title).join(", "),
+      ios: { 
+        sound: true 
+      },
+      android:
+      {
+        sound: true,
+        icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/62169-200.png',
+        priority: 'high', 
+        sticky: false,
+        vibrate: true 
+      }
+    };
+    Notifications.presentLocalNotificationAsync(localNotification);
   }
 
   // iterate through markers and return array of markers that are within 10 min walking distance
@@ -250,15 +274,10 @@ export default class App extends Component {
         </MapView>
         {this.state.markers.length<2
           ?
-          <Button title="Load My Google Places" onPress={() => this._handleButtonPress()} />
+          <Button style={styles.buttonContainer} title="Load My Google Places" onPress={() => this._handleButtonPress()} />
           : 
-          <Button color="#841584" title="My Location" onPress={() => this.moveMapToLocation()} />
+          <Button style={styles.buttonContainer} color="#841584" title="My Location" onPress={() => this.moveMapToLocation()} />
         }
-
-        <Text>latitude: state {this.state.location.coords.latitude}, region {this.state.region.latitude}</Text>
-        <Text>longitude: state {this.state.location.coords.longitude}, region {this.state.region.longitude}</Text>
-        <Text>latitudeDelta: {this.state.region.latitudeDelta},</Text>
-        <Text>longitudeDelta: {this.state.region.longitudeDelta},</Text>
 
       </View>
     );
@@ -274,10 +293,8 @@ export default class App extends Component {
 }
 
 const styles = StyleSheet.create({
-  bottomButton: {
-    color: "#841584",
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
+  buttonContainer: {
+    margin: 20,
   },
   container: {
     flex: 1,
@@ -315,3 +332,8 @@ const styles = StyleSheet.create({
 
               // {/* if within user's geofence
               // if (pet.latitude && pet.longitude) { */}
+
+              // <Text>latitude: state {this.state.location.coords.latitude}, region {this.state.region.latitude}</Text>
+              // <Text>longitude: state {this.state.location.coords.longitude}, region {this.state.region.longitude}</Text>
+              // <Text>latitudeDelta: {this.state.region.latitudeDelta},</Text>
+              // <Text>longitudeDelta: {this.state.region.longitudeDelta},</Text>
