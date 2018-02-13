@@ -33,16 +33,3 @@ PushNotification.configure({
       */
     requestPermissions: true,
 });
-
-// Handling Notifications
-
-// When any notification is opened or received the callback onNotification is called passing an object with the notification data.
-
-// Notification object example:
-
-// {
-//     foreground: false, // BOOLEAN: If the notification was received in foreground or not
-//     userInteraction: false, // BOOLEAN: If the notification was opened by the user from the notification area or not
-//     message: 'My Notification Message', // STRING: The notification message
-//     data: {}, // OBJECT: The push data
-// }
