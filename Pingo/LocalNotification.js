@@ -15,15 +15,3 @@ export const localNotification = {
       vibrate: true 
     }
 };
-
-// let t = new Date();
-// t.setSeconds(t.getSeconds() + 3);
-
-// export const schedulingOptions = {
-//     time: (new Date()).getTime() + 1000 // (date or number) — A Date object representing when to fire the notification or a number in Unix epoch time. Example: (new Date()).getTime() + 1000 is one second from now.
-//     // repeat: repeat
-// };
-
-// Notifications.scheduleLocalNotificationAsync(localNotification, schedulingOptions);
-
-// Notifications.cancelAllScheduledNotificationsAsync();
